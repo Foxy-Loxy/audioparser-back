@@ -36,7 +36,6 @@ class ApiController extends Controller
                 $html = file_get_contents($url);
             } catch (\Exception $e) {
                 $responce['message'] = $e->getMessage();
-                return response()->json($responce, 404);
             }
 
             $crawler = new Crawler($html);
@@ -58,7 +57,7 @@ class ApiController extends Controller
             }
 
             //SoundCloud api
-            $token = 'user_id=269094-462304-546107-446934&client_id=qPtWURX3JrkpXGy7vWetJDsiZVcOdpXy';
+            $token = 'client_id=qPtWURX3JrkpXGy7vWetJDsiZVcOdpXy';
             $host_name = 'http://localhost:8000/api/soundcloud/';
             $limit = (string)50;
             if ($request->exists('page'))
@@ -92,7 +91,7 @@ class ApiController extends Controller
     }
 
     public function soundcloud($id) {
-        $token = '?user_id=269094-462304-546107-446934&client_id=qPtWURX3JrkpXGy7vWetJDsiZVcOdpXy';
+        $token = '?client_id=qPtWURX3JrkpXGy7vWetJDsiZVcOdpXy';
         return redirect()->away('https://api.soundcloud.com/tracks/' . $id . '/stream' . $token);
     }
 }
