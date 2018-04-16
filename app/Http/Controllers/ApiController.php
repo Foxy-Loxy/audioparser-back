@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\Redis;
+use Symfony\Component\HttpFoundation\Response;
 
 class ApiController extends Controller
 {
@@ -16,16 +17,16 @@ class ApiController extends Controller
             'page' => 'integer'
         ]);
         $page = 0;
-        $search = urlencode($request->input('search'));
+        $search = $request->input('search');
         //mp3cc.com parsing
         $url = 'http://mp3cc.com/search/f/' . $search;
         if ($request->exists('page')) {
             $url .= '/page/' . $request->input('page');
             $page = $request->input('page');
         }
-
         $search_hash = md5($search . $page);
 
+//        dd($url);
         $key = Redis::get($search_hash);
         if ($key != null){
             $json = Redis::get($search_hash);
@@ -43,9 +44,19 @@ class ApiController extends Controller
             //forming URL-SONG_NAME-ARTISTS list
             $mp3cc_songnames = array();
             $mp3cc_urls = $crawler->filter('li[data-mp3]')->extract(array('data-mp3'));
-            foreach ($crawler->filter('li[data-mp3] > h2.playlist-name > b > a') as $element) {
+            foreach ($crawler->filter('li[data-mp3] > h2.playlist-name > em > a') as $element) {
                 array_push($mp3cc_songnames, $element->nodeValue);
             };
+            $mp3cc_songDuration = array();
+            foreach ($crawler->filter('em > span.playlist-duration') as $element) {
+                $minutes = 0;
+                $seconds = 0;
+                $str_time = $element->nodeValue;
+                $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "$1:$2", $str_time);
+                sscanf($str_time, "%d:%d", $minutes, $seconds);
+                $time_seconds = $minutes * 60 + $seconds;
+                array_push($mp3cc_songDuration, $time_seconds);
+            }
 
             $responce = array();
 
@@ -53,19 +64,21 @@ class ApiController extends Controller
                 $track['origin'] = 'mp3cc';
                 $track['url'] = $mp3cc_urls[$i];
                 $track['title'] = $mp3cc_songnames[$i];
+                $track['duration'] = $mp3cc_songDuration[$i];
                 array_push($responce, $track);
             }
 
             //SoundCloud api
             $token = 'client_id=qPtWURX3JrkpXGy7vWetJDsiZVcOdpXy';
             $host_name = 'http://localhost:8000/api/soundcloud/';
-            $limit = (string)50;
+            $limit = 50;
             if ($request->exists('page'))
-                $offset = (string)($request->exists('page') * $limit);
+                $offset = $request->input('page') * $limit;
             else
-                $offset = (string)0;
+                $offset = 0;
 
             $url = 'https://api-v2.soundcloud.com/search?q= ' . $search . '&limit=' . $limit . '&offset=' . $offset . '&' . $token;
+//            dd($url);
             try {
                 $json = file_get_contents($url);
             } catch (\Exception $e) {
@@ -80,6 +93,7 @@ class ApiController extends Controller
                 $tmp_track['origin'] = 'soundcloud';
                 $tmp_track['url'] = $host_name . $track->id;
                 $tmp_track['title'] = $track->title;
+                $tmp_track['duration'] = (int)round(($track->duration)/1000) + 0;
                 array_push($responce, $tmp_track);
             }
 
