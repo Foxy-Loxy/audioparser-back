@@ -98,7 +98,7 @@ class ApiController extends Controller
             }
 
             Redis::set($search_hash, json_encode($responce));
-            Redis::expire($search_hash, 300);
+            Redis::expire($search_hash, 3600);
 
             return response()->json($responce, 200);
         }
