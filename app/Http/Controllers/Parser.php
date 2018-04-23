@@ -13,6 +13,7 @@ class Parser extends Controller
     private $page_search_url;
     private $track_selector;
     private $artist_selector;
+    private $title_selector;
     private $duration_selector;
     private $thumbnail_selector;
     private $client_key;
@@ -30,14 +31,14 @@ class Parser extends Controller
 
     public function setSearchUrl($url)
     {
-        if(preg_match('^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&\'\(\)\*\+,;=.]+$', $url) == 0)
+        if(preg_match('^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&\'\(\)\*\+,;=.]+$^', $url) == 0)
             throw new Exception('setSearchUrl:Parameter should be a valid URL');
         $this->search_url = $url;
     }
 
     public function setSearchPageUrl($url)
     {
-        if(preg_match('^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&\'\(\)\*\+,;=.]+$', $url) == 0)
+        if(preg_match('^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&\'\(\)\*\+,;=.]+$^', $url) == 0)
             throw new Exception('setSearchPageUrl: Parameter should be a valid URL');
         $this->page_search_url = $url;
     }
@@ -57,6 +58,11 @@ class Parser extends Controller
         $this->artist_selector = $selector;
     }
 
+    public function setTitleSelector($selector)
+    {
+        $this->title_selector = $selector;
+    }
+
     public function setThumbnailSelector($selector)
     {
         $this->thumbnail_selector = $selector;
@@ -66,27 +72,66 @@ class Parser extends Controller
         $this->client_key = $key;
     }
 
+    /*
+     *  'commenceSearch' returns collection of Crawler filtered objects
+     */
+
     public function commenceSearch($query, $page)
     {
-        //URL to get DOM
+        if ($page == 0)
+            unset($page);
+        // URL to get DOM
         $url = '';
         // If page No. is given
-        if (isset($this->page))
+        if (isset($page))
             $url = $this->search_url;
         // If page No. is NOT given
         else
             $url = $this->page_search_url;
-        //Populate URL with query,page and client_key
-        $url = str_replace('SEARCH', $query, $url) = str_replace('PAGE', $page, $url) = str_replace('KEY', $this->client_key, $url);
-        //Create new instance of http client
+        // Populate URL with query,page and client_key
+        $url = str_replace('SEARCH', $query, $url);
+        if (isset($page))
+            $url = str_replace('PAGE', $page, $url);
+        if (isset($this->client_key))
+            $url = str_replace('KEY', $this->client_key, $url);
+        // Create new instance of http client
         $http = new Client();
         try {
             $responce = $http->request('GET', $url);
         } catch (Exception $e){
             throw new Exception('commenceSearch: Could not resolve host or connection is down');
         }
+        // Get html of page
         $html = (string)$responce->getBody();
+        // Parse it with symphony/dom-crawler
         $crawler = new Crawler($html);
+        // Create responce collection
+        if (isset($this->track_selector))
+            $collection['track_urls'] = $crawler->filter($this->track_selector);
+        else
+            $collection['track_urls'] = null;
+
+        if (isset($this->title_selector))
+            $collection['track_titles'] = $crawler->filter($this->title_selector);
+        else
+            $collection['track_titles'] = null;
+
+        if (isset($this->artist_selector))
+            $collection['track_artists'] = $crawler->filter($this->title_selector);
+        else
+            $collection['track_artists'] = null;
+
+        if (isset($this->duration_selector))
+            $collection['track_duration'] = $crawler->filter($this->duration_selector);
+        else
+            $collection['track_duration'] = null;
+
+        if (isset($this->thumbnail_selector))
+            $collection['thumbnail_artists'] = $crawler->filter($this->thumbnail_selector);
+        else
+            $collection['thumbnail_artists'] = null;
+
+        return $collection;
 
     }
 
