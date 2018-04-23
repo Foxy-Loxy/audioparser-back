@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\Redis;
+use GuzzleHttp\Client;
 
 class ApiController extends Controller
 {
@@ -108,5 +109,12 @@ class ApiController extends Controller
     public function soundcloud($id) {
         $token = '?client_id=qPtWURX3JrkpXGy7vWetJDsiZVcOdpXy';
         return redirect()->away('https://api.soundcloud.com/tracks/' . $id . '/stream' . $token);
+    }
+
+    public function test(){
+        $http = new Client();
+        $responce = $http->request('GET', 'http://a2-lab.com/php_govno');
+
+        dd((string)$responce->getBody());
     }
 }
