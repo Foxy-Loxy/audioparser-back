@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\ApiSource\Parse;
 
-use Illuminate\Http\Request;
 use Mockery\Exception;
 use Symfony\Component\DomCrawler\Crawler;
 use GuzzleHttp\Client;
 
-class Parser extends Controller
+class Parser
 {
     private $search_url;
     private $page_search_url;
@@ -68,13 +67,46 @@ class Parser extends Controller
         $this->thumbnail_selector = $selector;
     }
 
-    public function setClienKey($key){
+    public function setClientKey($key){
         $this->client_key = $key;
     }
 
     /*
      *  'commenceSearch' returns collection of Crawler filtered objects
      */
+
+    public function createResponseArray($origin, $artists, $titles, $urls, $durations, $thumbnails){
+        $response = array();
+        for ($i = 0; array_key_exists($i, $urls); $i++) {
+
+
+            $track['artist'] = null;
+            $track['url'] = null;
+            $track['title'] = null;
+            $track['duration'] = null;
+            $track['thumbnail'] = null;
+            $track['origin'] = $origin;
+
+            if ($artists != null)
+                $track['artist'] = $artists[$i];
+
+            if ($urls != null)
+                $track['url'] = $urls[$i];
+
+            if ($titles != null)
+                $track['title'] = $titles[$i];
+
+            if ($durations != null)
+                $track['duration'] = $durations[$i];
+
+            if ($thumbnails != null)
+                $track['thumbnail'] = $thumbnails[$i];
+
+
+            array_push($response, $track);
+        }
+        return $response;
+    }
 
     public function commenceSearch($query, $page)
     {
@@ -117,7 +149,7 @@ class Parser extends Controller
             $collection['track_titles'] = null;
 
         if (isset($this->artist_selector))
-            $collection['track_artists'] = $crawler->filter($this->title_selector);
+            $collection['track_artists'] = $crawler->filter($this->artist_selector);
         else
             $collection['track_artists'] = null;
 
@@ -127,12 +159,32 @@ class Parser extends Controller
             $collection['track_duration'] = null;
 
         if (isset($this->thumbnail_selector))
-            $collection['thumbnail_artists'] = $crawler->filter($this->thumbnail_selector);
+            $collection['track_thumbnail'] = $crawler->filter($this->thumbnail_selector);
         else
-            $collection['thumbnail_artists'] = null;
+            $collection['track_thumbnail'] = null;
 
         return $collection;
 
+    }
+
+    public function timeStringToSeconds($string, $type = 'mm:ss'){
+        $minutes = 0;
+        $seconds = 0;
+        $str_time = $string;
+        $time_seconds = 0;
+        if ($type == 'mm:ss') {
+            $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "$1:$2", $str_time);
+            sscanf($str_time, "%d:%d", $minutes, $seconds);
+            $time_seconds = $minutes * 60 + $seconds;
+        } elseif ($type == 'hh:mm:ss') {
+            $hours = 0;
+            $str_time = preg_replace("/^([\d]{1,2})\:([\d]{1,2})\:([\d]{2})$/", "$1:$2:$3", $str_time);
+            sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
+            $time_seconds = $hours * 3600 + $minutes * 60 + $seconds;
+        } else
+            throw new Exception('Unknown time format');
+
+        return $time_seconds;
     }
 
 

@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\ApiSource\mp3cc\mp3cc;
+use App\ApiSource\musicxn41a\musicxn41a;
 use Illuminate\Http\Request;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\Redis;
 use GuzzleHttp\Client;
-use \App\Http\Controllers\mp3cc;
 
 class ApiController extends Controller
 {
@@ -115,5 +116,7 @@ class ApiController extends Controller
     public function test(){
         $search = new mp3cc();
         $search->search('Dethklok');
+        $search = new musicxn41a();
+        dd($search->search('Dethklok'));
     }
 }
