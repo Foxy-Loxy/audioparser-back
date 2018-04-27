@@ -110,12 +110,14 @@ class Parser
 
     public function commenceSearch($query, $page)
     {
+
         if ($page == 0)
             unset($page);
+
         // URL to get DOM
         $url = '';
         // If page No. is given
-        if (isset($page))
+        if (!isset($page))
             $url = $this->search_url;
         // If page No. is NOT given
         else
@@ -126,18 +128,20 @@ class Parser
             $url = str_replace('PAGE', $page, $url);
         if (isset($this->client_key))
             $url = str_replace('KEY', $this->client_key, $url);
+
         // Create new instance of http client
         $http = new Client();
         try {
-            $responce = $http->request('GET', $url);
+            $response = $http->request('GET', $url);
         } catch (Exception $e){
             throw new Exception('commenceSearch: Could not resolve host or connection is down');
         }
+
         // Get html of page
-        $html = (string)$responce->getBody();
+        $html = (string)$response->getBody();
         // Parse it with symphony/dom-crawler
         $crawler = new Crawler($html);
-        // Create responce collection
+        // Create response collection
         if (isset($this->track_selector))
             $collection['track_urls'] = $crawler->filter($this->track_selector);
         else

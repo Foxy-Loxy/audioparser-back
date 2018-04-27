@@ -21,7 +21,7 @@ class ApiController extends Controller
             'page' => 'integer'
         ]);
         if ($request->has('page'))
-            $page = $request->input('search');
+            $page = $request->input('page');
         else
             $page = 0;
         $query = urlencode($request->input('search'));
@@ -33,17 +33,19 @@ class ApiController extends Controller
             return response()->json($response, 201);
         } else {
 
+//            dd($page);
+
             $search = new mp3cc();
-            $response = $search->search($query);
+            $response = $search->search($query, $page);
 
             $search = new musicxn41a();
-            $response = array_merge($response, $search->search($query));
+            $response = array_merge($response, $search->search($query, $page));
 
             $search = new soundcloud();
-            $response = array_merge($response, $search->search($query));
+            $response = array_merge($response, $search->search($query, $page));
 
             Cache::put($search_hash, json_encode($response), 60);
-            
+
             return response()->json($response, 200);
         }
     }
