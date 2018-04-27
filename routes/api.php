@@ -20,3 +20,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::get('/getList', 'ApiController@getList');
 Route::get('/soundcloud/{id}', 'ApiController@soundcloud');
 Route::get('/test', 'ApiController@test');
+Route::get('/flush', 'ApiController@flush');

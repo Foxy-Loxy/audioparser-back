@@ -8,14 +8,14 @@ use GuzzleHttp\Client;
 
 class Parser
 {
-    private $search_url;
-    private $page_search_url;
-    private $track_selector;
-    private $artist_selector;
-    private $title_selector;
-    private $duration_selector;
-    private $thumbnail_selector;
-    private $client_key;
+    protected $search_url;
+    protected $page_search_url;
+    protected $track_selector;
+    protected $artist_selector;
+    protected $title_selector;
+    protected $duration_selector;
+    protected $thumbnail_selector;
+    protected $client_key;
 
     public function __construct()
     {
