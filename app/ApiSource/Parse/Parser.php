@@ -132,6 +132,7 @@ class Parser
         // Create new instance of http client
         $http = new Client();
         try {
+//            dd($this);
             $response = $http->request('GET', $url);
         } catch (Exception $e){
             throw new Exception('commenceSearch: Could not resolve host or connection is down');
@@ -189,6 +190,35 @@ class Parser
             throw new Exception('Unknown time format');
 
         return $time_seconds;
+    }
+
+    static public function parseAll($query, $page = 0){
+        //getting all names of parsing classes from congif
+        $parsClasses = config('parser.parsers');
+        //making array of resolvers
+        $resolvers = array();
+        //making defers array
+        $defers = array();
+
+        //filling array with defers
+        for ($i = 0; $i < count($parsClasses); $i++)
+            $defers[$i] = new \React\Promise\Deferred();
+        //filling array of resolvers with promises
+        for ($i = 0; $i < count($parsClasses); $i++)
+            $resolvers[$i] = $defers[$i]->promise();
+
+        //making promises for each of objects
+        for ($i = 0; $i < count($parsClasses); $i++)
+            $defers[$i]->resolve((app()->make($parsClasses[$i]))->search($query, $page));
+
+        $promise = \React\Promise\all($resolvers)->then(function($resolved){
+            $response = array();
+            for ($i = 0; $i < count($resolved); $i++)
+                $response = array_merge($response, $resolved[$i]);
+            return $response;
+        });
+
+        return $promise;
     }
 
 

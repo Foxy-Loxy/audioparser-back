@@ -12,7 +12,7 @@ class musicxn41a extends Parser{
         $this->setTitleSelector('ul.playlist > li[data-mp3] > h2.playlist-name > em');
         $this->setArtistSelector('ul.playlist > li[data-mp3] > h2.playlist-name > b');
         $this->setSearchPageUrl('http://music.xn--41a.ws/search/SEARCH/PAGE');
-        $this->setSearchPageUrl('http://music.xn--41a.ws/search/SEARCH');
+        $this->setSearchUrl('http://music.xn--41a.ws/search/SEARCH');
         $this->setThumbnailSelector('div.playlist-btn > img');
         $collection = $this->commenceSearch($query, $page);
 

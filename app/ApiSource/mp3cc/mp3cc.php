@@ -7,7 +7,6 @@ use App\ApiSource\Parse\Parser;
 class mp3cc extends Parser {
 
     function search($query, $page = 0){
-//        dd($page);
         $this->setTrackSelector('li[data-mp3]');
         $this->setDurationSelector('em > span.playlist-duration');
         $this->setTitleSelector('li[data-mp3] > h2.playlist-name > em > a');
