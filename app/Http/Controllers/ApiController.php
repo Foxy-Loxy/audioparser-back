@@ -14,6 +14,7 @@ class ApiController extends Controller
     public function getList(ApiListSearchRequest $request)
     {
         if(!$response = $request->checkCache()) {
+//            Parser::parseAllPool($request->search, $request->page);
             $promises = array();
             $promises[] = Parser::parseAll($request->search, $request->page);
             $promises[] = Api::parseAll($request->search, $request->page);

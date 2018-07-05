@@ -6,13 +6,18 @@ use App\ApiSource\Parse\Parser;
 
 class mp3cc extends Parser {
 
-    function search($query, $page = 0){
+    public function __construct($query = null, $page = 0)
+    {
         $this->setTrackSelector('li[data-mp3]');
         $this->setDurationSelector('em > span.playlist-duration');
         $this->setTitleSelector('li[data-mp3] > h2.playlist-name > em > a');
         $this->setArtistSelector('li[data-mp3] > h2.playlist-name > b > a');
         $this->setSearchPageUrl('http://mp3cc.com/search/f/SEARCH/page/PAGE');
         $this->setSearchUrl('http://mp3cc.com/search/f/SEARCH');
+        parent::__construct($query, $page);
+    }
+
+    function search($query, $page = 0){
         $collection = $this->commenceSearch($query, $page);
 
         $urls = $collection['track_urls']->extract(array('data-mp3'));

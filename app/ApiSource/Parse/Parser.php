@@ -6,7 +6,7 @@ use Mockery\Exception;
 use Symfony\Component\DomCrawler\Crawler;
 use GuzzleHttp\Client;
 
-class Parser
+abstract class Parser /* extends \Threaded */
 {
     protected $search_url;
     protected $page_search_url;
@@ -16,10 +16,18 @@ class Parser
     protected $duration_selector;
     protected $thumbnail_selector;
     protected $client_key;
+    //for constructor
+    protected $page;
+    protected $query;
 
-    public function __construct()
-    {
+    public function __construct($query = null, $page = 0) {
+        $this->page = $page;
+        $this->query = $query;
+    }
 
+    public function construct($query = null, $page = 0) {
+        $this->page = $page;
+        $this->query = $query;
     }
 
     /*
@@ -106,6 +114,12 @@ class Parser
             array_push($response, $track);
         }
         return $response;
+    }
+
+    abstract public function search($query, $page);
+
+    public function run(){
+        return $this->search($this->query, $this->page);
     }
 
     public function commenceSearch($query, $page)
@@ -220,6 +234,25 @@ class Parser
 
         return $promise;
     }
+
+//    static public function parseAllPool($query, $page = 0){
+//        $parsClasses = config('parser.parsers');
+//        $classArr = array();
+//        if ($page == null)
+//            $page = 0;
+//
+//        foreach ($parsClasses as $class)
+//            $classArr[] = app()->make($class);
+//
+//        foreach ($classArr as $class)
+//            $class->construct($query, $page);
+//
+//        $pool = new \Pool(3);
+//
+//        dd($classArr, $parsClasses, $pool);
+//
+//        return true;
+//    }
 
 
 }

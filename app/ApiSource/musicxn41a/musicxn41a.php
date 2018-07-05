@@ -6,7 +6,8 @@ use App\ApiSource\Parse\Parser;
 
 class musicxn41a extends Parser{
 
-    public function search($query, $page = 0){
+    public function __construct($query = null, $page = 0)
+    {
         $this->setTrackSelector('ul.playlist > li[data-mp3]');
         $this->setDurationSelector('em > span.playlist-duration');
         $this->setTitleSelector('ul.playlist > li[data-mp3] > h2.playlist-name > em');
@@ -14,6 +15,11 @@ class musicxn41a extends Parser{
         $this->setSearchPageUrl('http://music.xn--41a.ws/search/SEARCH/PAGE');
         $this->setSearchUrl('http://music.xn--41a.ws/search/SEARCH');
         $this->setThumbnailSelector('div.playlist-btn > img');
+        parent::__construct($query, $page);
+    }
+
+    public function search($query, $page = 0){
+
         $collection = $this->commenceSearch($query, $page);
 
         $urls = $collection['track_urls']->extract(array('data-mp3'));
